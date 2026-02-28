@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Flame, Droplet, Zap, Shield, Sparkles, Leaf, Snowflake, Swords, Skull, Mountain, Wind, Brain, Bug as BugIcon, Diamond, Ghost, Crown, Moon, Wrench, Circle, Info, X } from 'lucide-react';
+import { Flame, Droplet, Zap, Sparkles, Leaf, Snowflake, Swords, Skull, Mountain, Wind, Brain, Bug as BugIcon, Diamond, Ghost, Crown, Moon, Wrench, Circle, Info, X } from 'lucide-react';
 
 interface PokemonArenaProps {
   socket: any;
