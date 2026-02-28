@@ -11,6 +11,8 @@ export interface RemotePlayer {
   y: number;
   stats: PlayerStats;
   isWalking: boolean;
+  direction?: string;
+  animUntil?: number;
 }
 
 export interface ChatMessage {
@@ -61,8 +63,8 @@ export const useNetwork = (
       setRemotePlayers(players);
     });
 
-    newSocket.on('player_joined', (player: RemotePlayer) => {
-      setRemotePlayers(prev => ({ ...prev, [player.id]: player }));
+    newSocket.on('player_joined', (player: RemotePlayer & { direction?: string, animUntil?: number }) => {
+      setRemotePlayers(prev => ({ ...prev, [player.id]: { ...player, direction: 'down', animUntil: 0 } }));
     });
 
     newSocket.on('player_left', (playerId: string) => {
@@ -74,7 +76,26 @@ export const useNetwork = (
     });
 
     newSocket.on('player_moved', (player: RemotePlayer) => {
-      setRemotePlayers(prev => ({ ...prev, [player.id]: player }));
+      setRemotePlayers(prev => {
+         const oldPos = prev[player.id];
+         let newDir = oldPos?.direction || 'down';
+         
+         if (oldPos) {
+             if (player.x > oldPos.x) newDir = 'right';
+             else if (player.x < oldPos.x) newDir = 'left';
+             else if (player.y > oldPos.y) newDir = 'down';
+             else if (player.y < oldPos.y) newDir = 'up';
+         }
+
+         return { 
+            ...prev, 
+            [player.id]: { 
+                ...player, 
+                direction: newDir,
+                animUntil: Date.now() + 200 // Keep them animating for 200ms after receiving a packet
+            } 
+         };
+      });
     });
 
     newSocket.on('receive_chat', (msg: Omit<ChatMessage, 'timestamp'>) => {
