@@ -35,6 +35,10 @@ const GameEngine: React.FC<GameEngineProps> = ({ email, characterGender }) => {
   const [chatInput, setChatInput] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
 
+  // Animation States
+  const walkSuffix = (playerPos.x + playerPos.y) % 2 === 0 ? '_walk1' : '_walk2';
+
+  // Network Sync Fallback
   const isWalking = (currentTime - lastMoveTime) < 200;
 
   // Initialize Multiplayer Network Manager
@@ -180,8 +184,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ email, characterGender }) => {
   const startX = playerPos.x - Math.floor(viewport.width / 2);
   const startY = playerPos.y - Math.floor(viewport.height / 2);
 
-  const walkSuffix = (playerPos.x + playerPos.y) % 2 === 0 ? '_walk1' : '_walk2';
-  const spriteSrc = `/sprites/${characterGender}_student_sprite${isWalking ? walkSuffix : ''}.png`;
+  const spriteSrc = `/sprites/${characterGender}_student_sprite.png`;
 
   const handleChatSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -301,8 +304,8 @@ const GameEngine: React.FC<GameEngineProps> = ({ email, characterGender }) => {
   const renderBuildings = () => {
     if (activeMapId !== 'main_campus') return null;
     const buildings = [
-      { id: 'djlhc', x: 8, y: 2, w: 5, h: 3, src: '/sprites/djlhc_building_sprite.png' },
-      { id: 'hostel', x: 1, y: 1, w: 3, h: 3, src: '/sprites/hostel_building_sprite.png' },
+      { id: 'djlhc', x: 11, y: 4, w: 5, h: 3, src: '/sprites/djlhc_building_sprite.png' },
+      { id: 'hostel', x: 2, y: 2, w: 3, h: 3, src: '/sprites/hostel_building_sprite.png' },
     ];
     return buildings.map(b => {
       const relX = b.x - startX;
@@ -428,7 +431,8 @@ const GameEngine: React.FC<GameEngineProps> = ({ email, characterGender }) => {
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start'
           }}
         >
-             <img src={spriteSrc} alt="You" style={{ width: '120%', height: '120%', objectFit: 'contain', position: 'absolute', top: -4 }} />
+             <img src={(socket && socket.id && remotePlayers[socket.id]) ? `/sprites/${remotePlayers[socket.id].characterGender}_student_sprite${isWalking ? walkSuffix : ''}.png` : spriteSrc} alt="Player" style={{ width: '120%', height: '120%', objectFit: 'contain', position: 'absolute', top: -4 }} />
+             
              <span style={{ 
                      background: 'rgba(59, 130, 246, 0.9)', color: 'white', fontSize: '10px', padding: '2px 4px', 
                      borderRadius: '4px', transform: 'translateY(-20px)', whiteSpace: 'nowrap', zIndex: 1
@@ -439,8 +443,8 @@ const GameEngine: React.FC<GameEngineProps> = ({ email, characterGender }) => {
 
         {/* Prompt for nearby player */}
         {nearbyPlayer && !interaction && !activeMiniGame && !activeChallengeRoom && !incomingChallenge && (
-            <div style={{ position: 'absolute', bottom: '120px', left: '50%', transform: 'translateX(-50%)', zIndex: 40, background: 'rgba(0,0,0,0.8)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <p style={{ margin: 0, fontSize: '14px', color: 'white' }}>
+            <div style={{ position: 'absolute', top: '50%', right: '24px', transform: 'translateY(-50%)', zIndex: 40, background: 'rgba(0,0,0,0.8)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <p style={{ margin: 0, fontSize: '14px', color: 'white', textAlign: 'center' }}>
                     <Swords size={16} style={{display:'inline', verticalAlign:'text-bottom', marginRight:'6px', color:'#f43f5e'}}/>
                     Nearby: <b>{nearbyPlayer.email.split('@')[0]}</b>
                 </p>
@@ -581,7 +585,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ email, characterGender }) => {
         {/* Mobile On-Screen Controls */}
         {isMobile && (
           <>
-            <div style={{ position: 'absolute', bottom: '16px', left: '16px', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div style={{ position: 'absolute', bottom: '40px', left: '24px', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                  <button onTouchStart={(e) => { e.preventDefault(); handleKeyDown({key: 'ArrowUp'} as any) }} style={{ width: '50px', height: '50px', borderRadius: '8px', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>▲</button>
                  <div style={{ display: 'flex', gap: '8px' }}>
                      <button onTouchStart={(e) => { e.preventDefault(); handleKeyDown({key: 'ArrowLeft'} as any) }} style={{ width: '50px', height: '50px', borderRadius: '8px', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>◀</button>
@@ -591,7 +595,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ email, characterGender }) => {
                  <button onTouchStart={(e) => { e.preventDefault(); handleKeyDown({key: 'ArrowDown'} as any) }} style={{ width: '50px', height: '50px', borderRadius: '8px', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>▼</button>
             </div>
             
-            <div style={{ position: 'absolute', bottom: '24px', right: '24px', zIndex: 100, display: 'flex', gap: '16px' }}>
+            <div style={{ position: 'absolute', bottom: '40px', right: '40px', zIndex: 100, display: 'flex', gap: '16px' }}>
                  <button onTouchStart={(e) => { e.preventDefault(); handleKeyDown({key: 'Enter'} as any) }} style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(59,130,246,0.6)', border: '1px solid rgba(255,255,255,0.4)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>ACT</button>
             </div>
           </>
