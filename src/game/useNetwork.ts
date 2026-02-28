@@ -21,7 +21,7 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-const SOCKET_SERVER_URL = 'http://localhost:3002';
+const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3002';
 
 export const useNetwork = (
   email: string | null,
