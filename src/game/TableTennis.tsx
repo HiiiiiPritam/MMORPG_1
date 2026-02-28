@@ -27,7 +27,7 @@ const TableTennis: React.FC<TTProps> = ({ socket, roomId, isChallenger, onEnd, a
     if (!socket) return;
     
     socket.on('tabletennis_move_received', (data: { packet: TTMove, isFromChallenger: boolean }) => {
-      console.log("[TT] Received move from server:", data);
+      console.log("[TT] Received  tt move from server:", data);
       if (data.isFromChallenger !== isChallenger) {
          setEnemyMove(data.packet);
       } else {
